@@ -2,13 +2,60 @@
 
 import { Loader2, Menu, ArrowRight, ChevronDown, Code, Globe, Server, Database, Palette, Mail, CheckCircle, Send, ArrowUp, Blocks, Briefcase, Copy, Check } from 'lucide-react';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import ShaderBackground from "../components/ShaderBackground";
+import { useLanguage } from "../context/LanguageContext";
+
+// ======================= LANGUAGE TOGGLE COMPONENT =======================
+function LanguageToggle() {
+  const { language, toggleLanguage } = useLanguage();
+  const enRef = useRef<HTMLSpanElement>(null);
+  const arRef = useRef<HTMLSpanElement>(null);
+  const [sliderStyle, setSliderStyle] = useState<React.CSSProperties>({});
+
+  useEffect(() => {
+    const activeRef = language === "en" ? enRef : arRef;
+    if (activeRef.current) {
+      setSliderStyle({
+        width: activeRef.current.offsetWidth + "px",
+        left: activeRef.current.offsetLeft + "px",
+      });
+    }
+  }, [language]);
+
+  return (
+    <button
+      onClick={toggleLanguage}
+      className="lang-toggle"
+      aria-label={language === "en" ? "Switch to Arabic" : "التبديل إلى الإنجليزية"}
+      id="lang-toggle-btn"
+      type="button"
+    >
+      <div className="lang-toggle-slider" style={sliderStyle}></div>
+      <span
+        ref={enRef}
+        className={`lang-toggle-option ${language === "en" ? "active" : ""}`}
+      >
+        EN
+      </span>
+      <span
+        ref={arRef}
+        className={`lang-toggle-option ${language === "ar" ? "active" : ""}`}
+      >
+        عر
+      </span>
+    </button>
+  );
+}
 
 export default function Home() {
+  const { language, t } = useLanguage();
+  const isRTL = language === "ar";
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleCopyEmail = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -51,10 +98,10 @@ export default function Home() {
         form.reset();
         setTimeout(() => setIsSuccess(false), 4000);
       } else {
-        alert("Oops! There was a problem sending your message. Please check your console or server logs.");
+        alert(t("contact.form.errorResponse"));
       }
     } catch (error) {
-      alert("Oops! There was a problem sending your message. Please check your internet connection.");
+      alert(t("contact.form.errorNetwork"));
     }
     
     setIsSubmitting(false);
@@ -101,7 +148,7 @@ export default function Home() {
             className="font-headline-md text-headline-md font-bold text-on-surface hover:text-primary transition-colors duration-300"
             href="#"
           >
-            Kareem Sultan
+            {t("nav.name")}
           </a>
 
           <div className="hidden md:flex items-center gap-8">
@@ -109,49 +156,78 @@ export default function Home() {
               className="text-primary font-bold border-b-2 border-primary pb-1"
               href="#home"
             >
-              Home
+              {t("nav.home")}
             </a>
             <a
               className="text-on-surface-variant hover:text-primary transition-colors duration-300"
               href="#about"
             >
-              About
+              {t("nav.about")}
             </a>
             <a
               className="text-on-surface-variant hover:text-primary transition-colors duration-300"
               href="#skills"
             >
-              Skills
+              {t("nav.skills")}
             </a>
             <a
               className="text-on-surface-variant hover:text-primary transition-colors duration-300"
               href="#projects"
             >
-              Projects
+              {t("nav.projects")}
             </a>
             <a
               className="text-on-surface-variant hover:text-primary transition-colors duration-300"
               href="#experience"
             >
-              Experience
+              {t("nav.experience")}
             </a>
             <a
               className="text-on-surface-variant hover:text-primary transition-colors duration-300"
               href="#contact"
             >
-              Contact
+              {t("nav.contact")}
             </a>
           </div>
 
-          <button className="md:hidden text-on-surface hover:text-primary transition-colors duration-300">
-            <Menu className="w-6 h-6" />
-          </button>
-          <a
-            className="hidden md:inline-flex items-center justify-center bg-primary text-on-primary px-6 py-2 rounded-full font-label-sm hover:bg-primary-fixed transition-all duration-300 shadow-[0_0_15px_rgba(173,198,255,0.3)] hover:shadow-[0_0_25px_rgba(173,198,255,0.6)]"
-            href="#contact"
-          >
-            Contact Me
-          </a>
+          <div className="flex items-center gap-3">
+            <LanguageToggle />
+            <button
+              className="md:hidden text-on-surface hover:text-primary transition-colors duration-300"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+            <a
+              className="hidden md:inline-flex items-center justify-center bg-primary text-on-primary px-6 py-2 rounded-full font-label-sm hover:bg-primary-fixed transition-all duration-300 shadow-[0_0_15px_rgba(173,198,255,0.3)] hover:shadow-[0_0_25px_rgba(173,198,255,0.6)]"
+              href="#contact"
+            >
+              {t("nav.contactMe")}
+            </a>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        <div
+          className={`md:hidden overflow-hidden transition-all duration-300 ease-out ${
+            mobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+          }`}
+        >
+          <div className="px-gutter pb-6 flex flex-col gap-4 bg-surface/90 backdrop-blur-xl border-t border-white/5">
+            <a className="text-primary font-bold py-2" href="#home" onClick={() => setMobileMenuOpen(false)}>{t("nav.home")}</a>
+            <a className="text-on-surface-variant hover:text-primary transition-colors py-2" href="#about" onClick={() => setMobileMenuOpen(false)}>{t("nav.about")}</a>
+            <a className="text-on-surface-variant hover:text-primary transition-colors py-2" href="#skills" onClick={() => setMobileMenuOpen(false)}>{t("nav.skills")}</a>
+            <a className="text-on-surface-variant hover:text-primary transition-colors py-2" href="#projects" onClick={() => setMobileMenuOpen(false)}>{t("nav.projects")}</a>
+            <a className="text-on-surface-variant hover:text-primary transition-colors py-2" href="#experience" onClick={() => setMobileMenuOpen(false)}>{t("nav.experience")}</a>
+            <a className="text-on-surface-variant hover:text-primary transition-colors py-2" href="#contact" onClick={() => setMobileMenuOpen(false)}>{t("nav.contact")}</a>
+            <a
+              className="inline-flex items-center justify-center bg-primary text-on-primary px-6 py-3 rounded-full font-label-sm hover:bg-primary-fixed transition-all duration-300 mt-2"
+              href="#contact"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {t("nav.contactMe")}
+            </a>
+          </div>
         </div>
       </nav>
       <main>
@@ -165,33 +241,31 @@ export default function Home() {
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background z-10"></div>
             <div className="absolute inset-0 grid-bg opacity-30 z-10"></div>
           </div>
-          <div className="relative z-20 max-w-container-max mx-auto px-gutter w-full flex flex-col md:flex-row items-center justify-between gap-12">
-            <div className="flex-1 text-center md:text-left reveal">
-              <p className="font-mono text-mono text-secondary mb-4 flex items-center justify-center md:justify-start gap-2">
-                <span className="w-8 h-[1px] bg-secondary"></span> Hello, world.
+          <div className={`relative z-20 max-w-container-max mx-auto px-gutter w-full flex flex-col md:flex-row items-center justify-between gap-12`}>
+            <div className={`flex-1 text-center ${isRTL ? "md:text-right" : "md:text-left"} reveal`}>
+              <p className={`font-mono text-mono text-secondary mb-4 flex items-center justify-center ${isRTL ? "md:justify-end" : "md:justify-start"} gap-2`}>
+                <span className="w-8 h-[1px] bg-secondary"></span> {t("hero.greeting")}
               </p>
               <h1 className="font-display-hero-mobile text-display-hero-mobile md:font-display-hero md:text-display-hero text-on-surface mb-6 leading-tight">
-                Hi, I'm <br className="hidden md:block" />{" "}
-                <span className="text-gradient">Kareem Sultan</span>
+                {t("hero.titleLine1")} <br className="hidden md:block" />{" "}
+                <span className="text-gradient">{t("hero.name")}</span>
               </h1>
-              <p className="font-body-lg text-body-lg text-on-surface-variant mb-10 max-w-xl mx-auto md:mx-0">
-                Crafting high-performance digital experiences. I build robust
-                web applications that blend exceptional design with scalable
-                architecture.
+              <p className={`font-body-lg text-body-lg text-on-surface-variant mb-10 max-w-xl ${isRTL ? "mx-auto md:mr-0 md:ml-auto" : "mx-auto md:mx-0"}`}>
+                {t("hero.subtitle")}
               </p>
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
+              <div className={`flex flex-wrap items-center justify-center ${isRTL ? "md:justify-end" : "md:justify-start"} gap-4`}>
                 <a
                   className="bg-primary text-on-primary px-8 py-4 rounded-full font-label-sm font-semibold hover:bg-primary-fixed transition-all duration-300 shadow-[0_0_20px_rgba(173,198,255,0.4)] hover:shadow-[0_0_30px_rgba(173,198,255,0.7)] flex items-center gap-2"
                   href="#projects"
                 >
-                  View My Work
-                  <ArrowRight className="w-4 h-4" />
+                  {t("hero.cta.work")}
+                  <ArrowRight className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />
                 </a>
                 <a
                   className="px-8 py-4 rounded-full font-label-sm font-semibold text-on-surface border border-outline hover:border-primary hover:text-primary transition-all duration-300 glass-panel glow-hover"
                   href="#contact"
                 >
-                  Contact Me
+                  {t("hero.cta.contact")}
                 </a>
               </div>
             </div>
@@ -199,7 +273,7 @@ export default function Home() {
               <div className="relative w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 rounded-full p-2 bg-gradient-to-tr from-primary to-secondary animate-[spin_10s_linear_infinite]">
                 <div className="w-full h-full rounded-full overflow-hidden bg-surface animate-[spin_10s_linear_infinite_reverse]">
                   <img
-                    alt="Professional headshot of Kareem Sultan"
+                    alt={t("hero.imgAlt")}
                     className="w-full h-full object-cover scale-110 hover:scale-100 transition-transform duration-700"
                     src="/kareem.png"
                   />
@@ -210,7 +284,7 @@ export default function Home() {
 
           <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 flex flex-col items-center animate-bounce reveal">
             <span className="text-on-surface-variant font-mono text-[10px] uppercase tracking-widest mb-2">
-              Scroll
+              {t("hero.scroll")}
             </span>
             <ChevronDown className="w-6 h-6 text-on-surface-variant" />
           </div>
@@ -224,23 +298,17 @@ export default function Home() {
           <div className="max-w-container-max mx-auto px-gutter">
             <div className="text-center mb-16 reveal">
               <h2 className="font-headline-lg text-headline-lg text-on-surface mb-4">
-                About Me
+                {t("about.title")}
               </h2>
               <div className="w-16 h-1 bg-gradient-to-r from-primary to-secondary mx-auto rounded-full"></div>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div className="reveal">
-                <p className="font-body-lg text-body-lg text-on-surface-variant mb-6 leading-relaxed">
-                  I am a passionate software developer specializing in building
-                  exceptional digital experiences. With a strong foundation in
-                  modern web technologies, I focus on writing clean, elegant,
-                  and efficient code.
+                <p className={`font-body-lg text-body-lg text-on-surface-variant mb-6 leading-relaxed ${isRTL ? "text-right" : ""}`}>
+                  {t("about.p1")}
                 </p>
-                <p className="font-body-lg text-body-lg text-on-surface-variant mb-8 leading-relaxed">
-                  My journey in tech is driven by a continuous desire to learn
-                  and solve complex problems. Whether it's architecting a
-                  scalable backend or crafting an intuitive user interface, I
-                  bring dedication and precision to every project.
+                <p className={`font-body-lg text-body-lg text-on-surface-variant mb-8 leading-relaxed ${isRTL ? "text-right" : ""}`}>
+                  {t("about.p2")}
                 </p>
              
               </div>
@@ -250,10 +318,10 @@ export default function Home() {
                     <Blocks className="w-8 h-8" />
                   </div>
                   <h3 className="font-headline-md text-headline-md text-on-surface font-bold">
-                    10+
+                    {t("about.projects")}
                   </h3>
                   <p className="font-mono text-mono text-on-surface-variant">
-                    Projects Completed
+                    {t("about.projectsLabel")}
                   </p>
                 </div>
 
@@ -262,20 +330,20 @@ export default function Home() {
                     <Globe className="w-8 h-8" />
                   </div>
                   <h3 className="font-headline-md text-headline-md text-on-surface font-bold">
-                    Full-Stack
+                    {t("about.fullstack")}
                   </h3>
                   <p className="font-mono text-mono text-on-surface-variant">
-                    Developer
+                    {t("about.fullstackLabel")}
                   </p>
                 </div>
 
                 <div className="glass-panel p-6 rounded-xl glow-hover transition-all duration-300 col-span-2 flex items-center justify-between">
                   <div>
                     <h3 className="font-headline-md text-headline-md text-on-surface font-bold">
-                      ITI
+                      {t("about.iti")}
                     </h3>
                     <p className="font-mono text-mono text-on-surface-variant">
-                      Open-Source
+                      {t("about.itiLabel")}
                     </p>
                   </div>
                   <div className="text-tertiary">
@@ -295,24 +363,24 @@ export default function Home() {
           <div className="max-w-container-max mx-auto px-gutter">
             <div className="text-center mb-16 reveal">
               <h2 className="font-headline-lg text-headline-lg text-on-surface mb-4">
-                Technical Arsenal
+                {t("skills.title")}
               </h2>
               <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">
-                Tools and technologies I use to bring ideas to life.
+                {t("skills.subtitle")}
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[250px]">
               <div className="glass-panel rounded-xl p-8 bento-card bento-card-primary transition-all duration-500 reveal md:col-span-2 group relative overflow-hidden flex flex-col justify-between">
-                <div className="absolute -right-10 -top-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-all"></div>
+                <div className={`absolute ${isRTL ? "-left-10" : "-right-10"} -top-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-all`}></div>
                 <div className="relative z-10">
                   <div className="flex items-center gap-3 mb-4">
                     <Globe className="text-primary w-6 h-6" />
                     <h3 className="font-headline-md text-xl text-on-surface">
-                      Backend Architeture
+                      {t("skills.backend.title")}
                     </h3>
                   </div>
                   <p className="font-body-md text-on-surface-variant mb-6 line-clamp-2">
-                    Designing robust APIs and scalable server-side solutions.
+                    {t("skills.backend.desc")}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-auto relative z-10">
@@ -335,17 +403,16 @@ export default function Home() {
               </div>
 
               <div className="glass-panel rounded-xl p-8 bento-card bento-card-secondary transition-all duration-500 reveal group relative overflow-hidden flex flex-col justify-between">
-                <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-secondary/10 rounded-full blur-3xl group-hover:bg-secondary/20 transition-all"></div>
+                <div className={`absolute ${isRTL ? "-left-10" : "-right-10"} -bottom-10 w-40 h-40 bg-secondary/10 rounded-full blur-3xl group-hover:bg-secondary/20 transition-all`}></div>
                 <div className="relative z-10">
                   <div className="flex items-center gap-3 mb-4">
                     <Server className="text-secondary w-6 h-6" />
                     <h3 className="font-headline-md text-xl text-on-surface">
-                      Frontend Development
+                      {t("skills.frontend.title")}
                     </h3>
                   </div>
                   <p className="font-body-md text-on-surface-variant line-clamp-3">
-                    Crafting responsive, accessible, and performant user
-                    interfaces with modern frameworks.
+                    {t("skills.frontend.desc")}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-4 relative z-10">
@@ -362,16 +429,16 @@ export default function Home() {
               </div>
 
               <div className="glass-panel rounded-xl p-8 bento-card bento-card-tertiary transition-all duration-500 reveal group relative overflow-hidden flex flex-col justify-between">
-                <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-tertiary/10 rounded-full blur-3xl group-hover:bg-tertiary/20 transition-all"></div>
+                <div className={`absolute ${isRTL ? "-right-10" : "-left-10"} -bottom-10 w-40 h-40 bg-tertiary/10 rounded-full blur-3xl group-hover:bg-tertiary/20 transition-all`}></div>
                 <div className="relative z-10">
                   <div className="flex items-center gap-3 mb-4">
                     <Database className="text-tertiary w-6 h-6" />
                     <h3 className="font-headline-md text-xl text-on-surface">
-                      DataBase
+                      {t("skills.database.title")}
                     </h3>
                   </div>
                   <p className="font-body-md text-on-surface-variant line-clamp-3">
-                    Structuring, storing, and retrieving data efficiently.
+                    {t("skills.database.desc")}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-4 relative z-10">
@@ -395,12 +462,11 @@ export default function Home() {
                       build
                     </span>
                     <h3 className="font-headline-md text-xl text-on-surface">
-                      DevOps &amp; Tooling
+                      {t("skills.devops.title")}
                     </h3>
                   </div>
                   <p className="font-body-md text-on-surface-variant mb-6 max-w-lg">
-                    Streamlining deployment pipelines and maintaining
-                    development environments for optimal productivity.
+                    {t("skills.devops.desc")}
                   </p>
                   <div className="flex flex-wrap gap-2 mt-auto">
                     <span className="px-3 py-1 bg-surface-container border border-outline-variant rounded-full font-mono text-[12px] text-on-surface">
@@ -434,41 +500,41 @@ export default function Home() {
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 reveal">
               <div>
                 <h2 className="font-headline-lg text-headline-lg text-on-surface mb-4">
-                  Featured Work
+                  {t("projects.title")}
                 </h2>
                 <p className="font-body-md text-body-md text-on-surface-variant max-w-xl">
-                  A selection of recent projects that showcase my technical
-                  capabilities and design sensibility.
+                  {t("projects.subtitle")}
                 </p>
               </div>
               <a
-                className="hidden md:inline-flex items-center gap-2 text-primary hover:text-primary-fixed transition-colors font-label-sm mt-4 md:mt-0"
+                className={`hidden md:inline-flex items-center gap-2 text-primary hover:text-primary-fixed transition-colors font-label-sm mt-4 md:mt-0`}
                 href="https://github.com/K-Sultan" target="_blank"
               >
-                View GitHub{" "}
-                <ArrowRight className="w-4 h-4" />
+                {t("projects.viewGithub")}{" "}
+                <ArrowRight className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />
               </a>
             </div>
             <div className="space-y-24">
+              {/* Project 1 - Sonesta */}
               <div className="group grid grid-cols-1 lg:grid-cols-12 gap-8 items-center reveal">
                 <div className="lg:col-span-7 relative overflow-hidden rounded-xl glass-panel border border-white/10 group-hover:border-primary/50 transition-colors duration-500 h-[300px] md:h-[450px]">
                   <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 mix-blend-overlay"></div>
                   <img
-                    alt="Analytics dashboard UI showing data charts and dark mode aesthetic."
+                    alt={t("projects.sonesta.imgAlt")}
                     className="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-700 ease-out"
                     src="/Sonesta.png"
                   />
                 </div>
-                <div className="lg:col-span-5 flex flex-col justify-center lg:pl-8">
+                <div className={`lg:col-span-5 flex flex-col justify-center ${isRTL ? "lg:pr-8" : "lg:pl-8"}`}>
                   <p className="font-mono text-mono text-primary mb-2">
-                    01. Sonesta
+                    {t("projects.sonesta.number")}
                   </p>
                   <h3 className="font-headline-md text-2xl text-on-surface font-bold mb-4">
-                    Hotel Mangement System
+                    {t("projects.sonesta.title")}
                   </h3>
-                  <div className="glass-panel p-6 rounded-lg mb-6 shadow-lg lg:-ml-12 relative z-20">
+                  <div className={`glass-panel p-6 rounded-lg mb-6 shadow-lg ${isRTL ? "lg:-mr-12" : "lg:-ml-12"} relative z-20`}>
                     <p className="font-body-md text-on-surface-variant">
-                      Full-stack hotel system handling room availability, reservations, and payments end-to-end.
+                      {t("projects.sonesta.desc")}
                     </p>
                   </div>
                   <ul className="flex flex-wrap gap-4 font-mono text-[13px] text-on-surface-variant mb-8">
@@ -495,29 +561,26 @@ export default function Home() {
                 </div>
               </div>
 
+              {/* Project 2 - Pharma */}
               <div className="group grid grid-cols-1 lg:grid-cols-12 gap-8 items-center reveal">
-                <div className="lg:col-span-5 flex flex-col justify-center lg:pr-8 order-2 lg:order-1 text-left lg:text-right">
+                <div className={`lg:col-span-5 flex flex-col justify-center ${isRTL ? "lg:pl-8 order-2 lg:order-2 text-right" : "lg:pr-8 order-2 lg:order-1 text-left lg:text-right"}`}>
                   <p className="font-mono text-mono text-secondary mb-2">
-                    02. Pharma
+                    {t("projects.pharma.number")}
                   </p>
                   <h3 className="font-headline-md text-2xl text-on-surface font-bold mb-4">
-                    Clinic Management System
+                    {t("projects.pharma.title")}
                   </h3>
-                  <div className="glass-panel p-6 rounded-lg mb-6 shadow-lg lg:-mr-12 relative z-20">
+                  <div className={`glass-panel p-6 rounded-lg mb-6 shadow-lg ${isRTL ? "lg:-ml-12" : "lg:-mr-12"} relative z-20`}>
                     <p className="font-body-md text-on-surface-variant">
-                    Clinic platform for patients, doctors, appointments, and consultations with a structured backend.
-
-                        REST APIs with Django REST Framework
-                        Appointment & scheduling engine
-                        Role-based access (Patient/Doctor/Receptionist)
+                      {t("projects.pharma.desc")}
                     </p>
                   </div>
-                  <ul className="flex flex-wrap gap-4 font-mono text-[13px] text-on-surface-variant mb-8 lg:justify-end">
+                  <ul className={`flex flex-wrap gap-4 font-mono text-[13px] text-on-surface-variant mb-8 ${isRTL ? "lg:justify-start" : "lg:justify-end"}`}>
                     <li>Django</li>
                     <li>DRF</li>
                     <li>SQL</li>
                   </ul>
-                  <div className="flex items-center gap-4 lg:justify-end">
+                  <div className={`flex items-center gap-4 ${isRTL ? "lg:justify-start" : "lg:justify-end"}`}>
                     <a
                       className="text-on-surface hover:text-secondary transition-colors"
                       href="https://github.com/K-Sultan/Pharma"
@@ -534,36 +597,36 @@ export default function Home() {
                     </a>
                   </div>
                 </div>
-                <div className="lg:col-span-7 relative overflow-hidden rounded-xl glass-panel border border-white/10 group-hover:border-secondary/50 transition-colors duration-500 h-[300px] md:h-[450px] order-1 lg:order-2">
+                <div className={`lg:col-span-7 relative overflow-hidden rounded-xl glass-panel border border-white/10 group-hover:border-secondary/50 transition-colors duration-500 h-[300px] md:h-[450px] order-1 ${isRTL ? "lg:order-1" : "lg:order-2"}`}>
                   <div className="absolute inset-0 bg-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 mix-blend-overlay"></div>
                   <img
-                    alt="Hand holding smartphone showing a luxury e-commerce app interface."
+                    alt={t("projects.pharma.imgAlt")}
                     className="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-700 ease-out"
                     src="/Clinic.png"
                   />
                 </div>
               </div>
 
+              {/* Project 3 - Nota */}
               <div className="group grid grid-cols-1 lg:grid-cols-12 gap-8 items-center reveal">
                 <div className="lg:col-span-7 relative overflow-hidden rounded-xl glass-panel border border-white/10 group-hover:border-tertiary/50 transition-colors duration-500 h-[300px] md:h-[450px]">
                   <div className="absolute inset-0 bg-tertiary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 mix-blend-overlay"></div>
                   <img
-                    alt="Developer productivity suite interface with kanban boards and code editor."
+                    alt={t("projects.nota.imgAlt")}
                     className="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-700 ease-out"
                     src="/Smart Notes.png"
                   />
                 </div>
-                <div className="lg:col-span-5 flex flex-col justify-center lg:pl-8">
+                <div className={`lg:col-span-5 flex flex-col justify-center ${isRTL ? "lg:pr-8" : "lg:pl-8"}`}>
                   <p className="font-mono text-mono text-tertiary mb-2">
-                    03. Nota
+                    {t("projects.nota.number")}
                   </p>
                   <h3 className="font-headline-md text-2xl text-on-surface font-bold mb-4">
-                    Smart Notes app
+                    {t("projects.nota.title")}
                   </h3>
-                  <div className="glass-panel p-6 rounded-lg mb-6 shadow-lg lg:-ml-12 relative z-20">
+                  <div className={`glass-panel p-6 rounded-lg mb-6 shadow-lg ${isRTL ? "lg:-mr-12" : "lg:-ml-12"} relative z-20`}>
                     <p className="font-body-md text-on-surface-variant">
-                      Backend app to demonstrate some skills in nodejs implemented Auth systems models using mongoose 
-                      protected routes with middlewares and used react in frontend using some couple of AI models
+                      {t("projects.nota.desc")}
                     </p>
                   </div>
                   <ul className="flex flex-wrap gap-4 font-mono text-[13px] text-on-surface-variant mb-8">
@@ -602,63 +665,65 @@ export default function Home() {
           <div className="max-w-container-max mx-auto px-gutter">
             <div className="text-center mb-16 reveal">
               <h2 className="font-headline-lg text-headline-lg text-on-surface mb-4">
-                Experience
+                {t("experience.title")}
               </h2>
               <p className="font-body-md text-body-md text-on-surface-variant">
-                My professional journey so far.
+                {t("experience.subtitle")}
               </p>
             </div>
             <div className="max-w-3xl mx-auto relative">
-              <div className="absolute left-[15px] md:left-1/2 md:-ml-[1px] top-0 bottom-0 w-[2px] bg-outline-variant/30 border-l border-dashed border-outline-variant/50"></div>
+              <div className={`absolute ${isRTL ? "right-[15px] md:right-1/2 md:-mr-[1px]" : "left-[15px] md:left-1/2 md:-ml-[1px]"} top-0 bottom-0 w-[2px] bg-outline-variant/30 border-l border-dashed border-outline-variant/50`}></div>
 
+              {/* ITI Experience */}
               <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between mb-16 reveal group">
-                <div className="md:w-5/12 text-left md:text-right pr-8 md:pr-12 pl-12 md:pl-0 mb-4 md:mb-0">
+                <div className={`md:w-5/12 ${isRTL ? "text-right md:text-left pl-0 pr-12 md:pr-0 md:pl-12" : "text-left md:text-right pr-8 md:pr-12 pl-12 md:pl-0"} mb-4 md:mb-0`}>
                   <h3 className="font-headline-md text-xl text-on-surface font-semibold">
-                    Open Source Track
+                    {t("experience.iti.title")}
                   </h3>
                   <p className="font-mono text-sm text-primary mb-2">
-                    ITI (Information Technology Institute)
+                    {t("experience.iti.company")}
                   </p>
-                  <div className="font-body-md text-on-surface-variant text-sm space-y-2 mt-3">
-                    <p><strong className="text-on-surface">Track:</strong> Open Source Major</p>
-                    <p><strong className="text-on-surface">Projects:</strong> Collaborated on numerous cross-stack team projects.</p>
-                    <p><strong className="text-on-surface">Skills:</strong> Developed essential soft skills and mastered AI-assisted workflows.</p>
-                    <p><strong className="text-on-surface">Highlights:</strong> Advanced courses in Gen AI and cutting-edge technologies.</p>
+                  <div className={`font-body-md text-on-surface-variant text-sm space-y-2 mt-3`}>
+                    <p><strong className="text-on-surface">{t("experience.iti.track")}</strong> {t("experience.iti.trackValue")}</p>
+                    <p><strong className="text-on-surface">{t("experience.iti.projects")}</strong> {t("experience.iti.projectsValue")}</p>
+                    <p><strong className="text-on-surface">{t("experience.iti.skills")}</strong> {t("experience.iti.skillsValue")}</p>
+                    <p><strong className="text-on-surface">{t("experience.iti.highlights")}</strong> {t("experience.iti.highlightsValue")}</p>
                   </div>
                 </div>
 
-                <div className="absolute left-0 md:left-1/2 md:-ml-[16px] w-8 h-8 rounded-full glass-panel border-2 border-primary bg-surface flex items-center justify-center shadow-[0_0_15px_rgba(173,198,255,0.5)] z-10">
+                <div className={`absolute ${isRTL ? "right-0 md:right-1/2 md:-mr-[16px]" : "left-0 md:left-1/2 md:-ml-[16px]"} w-8 h-8 rounded-full glass-panel border-2 border-primary bg-surface flex items-center justify-center shadow-[0_0_15px_rgba(173,198,255,0.5)] z-10`}>
                   <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
                 </div>
-                <div className="md:w-5/12 pl-12 md:pl-12 text-left">
+                <div className={`md:w-5/12 ${isRTL ? "pr-12 md:pr-12 text-right" : "pl-12 md:pl-12 text-left"}`}>
                   <span className="font-mono text-mono bg-surface-container px-3 py-1 rounded text-on-surface-variant border border-outline-variant/30">
-                    2025 - Present
+                    {t("experience.iti.date")}
                   </span>
                 </div>
               </div>
 
+              {/* University Experience */}
               <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between reveal">
-                <div className="md:w-5/12 text-left md:text-right pr-8 md:pr-12 pl-12 md:pl-0 mb-4 md:mb-0 order-1 md:order-1">
-                  <span className="font-mono text-mono bg-surface-container px-3 py-1 rounded text-on-surface-variant border border-outline-variant/30 hidden md:inline-block">
-                    2021 - 2025
+                <div className={`md:w-5/12 ${isRTL ? "text-right md:text-left pr-0 md:pl-12 order-1 md:order-1" : "text-left md:text-right pr-8 md:pr-12 pl-12 md:pl-0 order-1 md:order-1"} mb-4 md:mb-0`}>
+                  <span className={`font-mono text-mono bg-surface-container px-3 py-1 rounded text-on-surface-variant border border-outline-variant/30 hidden md:inline-block`}>
+                    {t("experience.uni.date")}
                   </span>
                 </div>
 
-                <div className="absolute left-0 md:left-1/2 md:-ml-[12px] w-6 h-6 rounded-full glass-panel border-2 border-outline-variant bg-surface flex items-center justify-center z-10 transition-colors group-hover:border-secondary"></div>
-                <div className="md:w-5/12 pl-12 md:pl-12 text-left order-2 md:order-2">
+                <div className={`absolute ${isRTL ? "right-0 md:right-1/2 md:-mr-[12px]" : "left-0 md:left-1/2 md:-ml-[12px]"} w-6 h-6 rounded-full glass-panel border-2 border-outline-variant bg-surface flex items-center justify-center z-10 transition-colors group-hover:border-secondary`}></div>
+                <div className={`md:w-5/12 ${isRTL ? "pr-12 md:pr-12 text-right order-2 md:order-2" : "pl-12 md:pl-12 text-left order-2 md:order-2"}`}>
                   <h3 className="font-headline-md text-xl text-on-surface font-semibold">
-                    Computer Science Student
+                    {t("experience.uni.title")}
                   </h3>
                   <p className="font-mono text-sm text-secondary mb-2">
-                    University
+                    {t("experience.uni.company")}
                   </p>
-                  <div className="font-body-md text-on-surface-variant text-sm space-y-2 mt-3">
-                    <p><strong className="text-on-surface">Degree:</strong> B.Sc. in Computer Science (Grade: B)</p>
-                    <p><strong className="text-on-surface">Core Focus:</strong> Software Development Life Cycle (SDLC).</p>
-                    <p><strong className="text-on-surface">Coursework:</strong> Data Structures, Algorithms, and Core Programming.</p>
+                  <div className={`font-body-md text-on-surface-variant text-sm space-y-2 mt-3`}>
+                    <p><strong className="text-on-surface">{t("experience.uni.degree")}</strong> {t("experience.uni.degreeValue")}</p>
+                    <p><strong className="text-on-surface">{t("experience.uni.focus")}</strong> {t("experience.uni.focusValue")}</p>
+                    <p><strong className="text-on-surface">{t("experience.uni.coursework")}</strong> {t("experience.uni.courseworkValue")}</p>
                   </div>
-                  <span className="font-mono text-mono bg-surface-container px-3 py-1 rounded text-on-surface-variant border border-outline-variant/30 inline-block md:hidden mt-3">
-                    2021 - 2025
+                  <span className={`font-mono text-mono bg-surface-container px-3 py-1 rounded text-on-surface-variant border border-outline-variant/30 inline-block md:hidden mt-3`}>
+                    {t("experience.uni.date")}
                   </span>
                 </div>
               </div>
@@ -675,17 +740,15 @@ export default function Home() {
           <div className="max-w-container-max mx-auto px-gutter relative z-10">
             <div className="text-center mb-16 reveal">
               <p className="font-mono text-mono text-primary mb-4">
-                What's Next?
+                {t("contact.preTitle")}
               </p>
               <h2 className="font-display-hero-mobile text-4xl md:text-5xl text-on-surface mb-6 font-bold">
-                Let's Build Something
+                {t("contact.title1")}
                 <br />
-                Great Together
+                {t("contact.title2")}
               </h2>
               <p className="font-body-md text-body-md text-on-surface-variant max-w-xl mx-auto mb-10">
-                I'm currently open for new opportunities. Whether you have a
-                question or just want to say hi, I'll try my best to get back to
-                you!
+                {t("contact.subtitle")}
               </p>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 max-w-5xl mx-auto">
@@ -701,7 +764,7 @@ export default function Home() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-label-sm text-on-surface-variant mb-1">
-                      Email
+                      {t("contact.email")}
                     </p>
                     <p className="font-body-md text-on-surface font-medium group-hover:text-primary transition-colors truncate">
                       kareemhanysultan2004@gmail.com
@@ -724,7 +787,7 @@ export default function Home() {
                   </div>
                   <div>
                     <p className="font-label-sm text-on-surface-variant mb-1">
-                      LinkedIn
+                      {t("contact.linkedin")}
                     </p>
                     <p className="font-body-md text-on-surface font-medium group-hover:text-secondary transition-colors">
                       /in/kareem-sultan
@@ -744,7 +807,7 @@ export default function Home() {
                   </div>
                   <div>
                     <p className="font-label-sm text-on-surface-variant mb-1">
-                      GitHub
+                      {t("contact.github")}
                     </p>
                     <p className="font-body-md text-on-surface font-medium group-hover:text-tertiary transition-colors">
                       @K-Sultan
@@ -762,10 +825,10 @@ export default function Home() {
                 >
                   <CheckCircle className="w-16 h-16 text-primary mb-4" />
                   <h3 className="font-headline-md text-2xl text-on-surface font-bold mb-2">
-                    Message Sent!
+                    {t("contact.form.success.title")}
                   </h3>
                   <p className="font-body-md text-on-surface-variant">
-                    Thanks for reaching out. I'll get back to you soon.
+                    {t("contact.form.success.desc")}
                   </p>
                 </div>
                 <form className="space-y-6" id="contact-form" onSubmit={handleContactSubmit}>
@@ -775,14 +838,14 @@ export default function Home() {
                         className="block font-label-sm text-on-surface-variant mb-2"
                         htmlFor="name"
                       >
-                        Name
+                        {t("contact.form.name")}
                       </label>
                       <input
                         className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
                         id="name"
                         name="name"
                         required
-                        placeholder="Enter your name"
+                        placeholder={t("contact.form.namePlaceholder")}
                         type="text"
                       />
                     </div>
@@ -791,14 +854,14 @@ export default function Home() {
                         className="block font-label-sm text-on-surface-variant mb-2"
                         htmlFor="email"
                       >
-                        Email
+                        {t("contact.form.email")}
                       </label>
                       <input
                         className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
                         id="email"
                         name="email"
                         required
-                        placeholder="Enter your email"
+                        placeholder={t("contact.form.emailPlaceholder")}
                         type="email"
                       />
                     </div>
@@ -808,14 +871,14 @@ export default function Home() {
                       className="block font-label-sm text-on-surface-variant mb-2"
                       htmlFor="subject"
                     >
-                      Subject
+                      {t("contact.form.subject")}
                     </label>
                     <input
                       className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
                       id="subject"
                       name="subject"
                       required
-                      placeholder="Project Inquiry"
+                      placeholder={t("contact.form.subjectPlaceholder")}
                       type="text"
                     />
                   </div>
@@ -824,14 +887,14 @@ export default function Home() {
                       className="block font-label-sm text-on-surface-variant mb-2"
                       htmlFor="message"
                     >
-                      Message
+                      {t("contact.form.message")}
                     </label>
                     <textarea
                       className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none"
                       id="message"
                       name="message"
                       required
-                      placeholder="Hello, I'd like to discuss..."
+                      placeholder={t("contact.form.messagePlaceholder")}
                       rows={4}
                     ></textarea>
                   </div>
@@ -843,11 +906,11 @@ export default function Home() {
                   >
                     {isSubmitting ? (
                       <>
-                        <Loader2 className="animate-spin inline-block w-5 h-5" /> Sending...
+                        <Loader2 className="animate-spin inline-block w-5 h-5" /> {t("contact.form.sending")}
                       </>
                     ) : (
                       <>
-                        Send Message <Send className="w-4 h-4" />
+                        {t("contact.form.send")} <Send className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />
                       </>
                     )}
                   </button>
@@ -865,10 +928,10 @@ export default function Home() {
             className="font-headline-md text-headline-md font-bold text-on-surface"
             href="#"
           >
-            Kareem Sultan
+            {t("footer.name")}
           </a>
           <p className="font-body-md text-body-md text-on-surface-variant text-center">
-            © 2026 Kareem Sultan. Crafted with precision.
+            {t("footer.copyright")}
           </p>
           <div className="flex gap-6">
             <a
@@ -877,7 +940,7 @@ export default function Home() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Github
+              {t("footer.github")}
             </a>
             <a
               className="text-on-surface-variant hover:text-primary transition-colors duration-300 font-label-sm"
@@ -885,23 +948,23 @@ export default function Home() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              LinkedIn
+              {t("footer.linkedin")}
             </a>
             <a
               className="text-on-surface-variant hover:text-primary transition-colors duration-300 font-label-sm"
               href="mailto:kareemhanysultan2004@gmail.com"
             >
-              Email
+              {t("footer.email")}
             </a>
           </div>
         </div>
       </footer>
 
       <a
-        className="fixed bottom-8 right-8 w-12 h-12 bg-primary/20 backdrop-blur-md border border-primary/30 text-primary rounded-full flex items-center justify-center hover:bg-primary hover:text-on-primary transition-all duration-300 z-40 shadow-[0_0_15px_rgba(173,198,255,0.2)] hover:shadow-[0_0_20px_rgba(173,198,255,0.5)]"
+        className={`fixed bottom-8 ${isRTL ? "left-8" : "right-8"} w-12 h-12 bg-primary/20 backdrop-blur-md border border-primary/30 text-primary rounded-full flex items-center justify-center hover:bg-primary hover:text-on-primary transition-all duration-300 z-40 shadow-[0_0_15px_rgba(173,198,255,0.2)] hover:shadow-[0_0_20px_rgba(173,198,255,0.5)]`}
         href="#home"
         id="back-to-top"
-        title="Back to top"
+        title={t("backToTop")}
       >
         <ArrowUp className="w-6 h-6" />
       </a>
@@ -920,7 +983,7 @@ export default function Home() {
             <Check className="w-4 h-4 text-primary" />
           </div>
           <div>
-            <p className="font-label-sm text-on-surface font-semibold text-sm">Email copied to clipboard!</p>
+            <p className="font-label-sm text-on-surface font-semibold text-sm">{t("toast.copied")}</p>
             <p className="font-mono text-[11px] text-on-surface-variant">kareemhanysultan2004@gmail.com</p>
           </div>
         </div>
