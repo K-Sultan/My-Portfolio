@@ -61,3 +61,93 @@
     border-color: rgba(76, 215, 246, 0.4);
   }
 }
+
+/* ======================= RTL SUPPORT ======================= */
+
+/* Arabic font family override */
+[dir="rtl"] body {
+  font-family: 'Noto Sans Arabic', 'Inter', sans-serif;
+}
+
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] h4,
+[dir="rtl"] h5,
+[dir="rtl"] h6 {
+  font-family: 'Noto Sans Arabic', 'Geist', sans-serif;
+}
+
+/* Flip the text gradient direction for RTL */
+[dir="rtl"] .text-gradient {
+  background: linear-gradient(to left, #adc6ff, #d0bcff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Timeline line flips to the right side on desktop */
+@media (min-width: 768px) {
+  [dir="rtl"] .timeline-line {
+    left: auto;
+    right: 50%;
+    margin-left: 0;
+    margin-right: -1px;
+  }
+}
+
+/* Language toggle styles */
+.lang-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 3px;
+  cursor: pointer;
+  background: rgba(19, 19, 21, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+}
+
+.lang-toggle:hover {
+  border-color: rgba(173, 198, 255, 0.3);
+  box-shadow: 0 0 20px rgba(173, 198, 255, 0.1);
+}
+
+.lang-toggle-option {
+  position: relative;
+  z-index: 1;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: color 0.3s ease;
+  user-select: none;
+}
+
+.lang-toggle-option.active {
+  color: #131315;
+}
+
+.lang-toggle-option:not(.active) {
+  color: rgba(229, 225, 228, 0.6);
+}
+
+.lang-toggle-slider {
+  position: absolute;
+  top: 3px;
+  height: calc(100% - 6px);
+  border-radius: 9999px;
+  background: #adc6ff;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 12px rgba(173, 198, 255, 0.4);
+}
+
+/* Smooth transition for all RTL layout changes */
+[dir="rtl"] *,
+[dir="ltr"] * {
+  transition-property: margin, padding;
+  transition-duration: 0s;
+}
