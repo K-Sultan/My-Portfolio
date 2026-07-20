@@ -66,7 +66,7 @@
 
 /* Arabic font family override */
 [dir="rtl"] body {
-  font-family: 'Noto Sans Arabic', 'Inter', sans-serif;
+  font-family: 'Cairo', 'Inter', sans-serif;
 }
 
 [dir="rtl"] h1,
@@ -75,7 +75,7 @@
 [dir="rtl"] h4,
 [dir="rtl"] h5,
 [dir="rtl"] h6 {
-  font-family: 'Noto Sans Arabic', 'Geist', sans-serif;
+  font-family: 'Cairo', 'Geist', sans-serif;
 }
 
 /* Flip the text gradient direction for RTL */
@@ -133,7 +133,7 @@
 }
 
 .lang-toggle-option:not(.active) {
-  color: rgba(255, 255, 255, 0.9);
+  color: rgb(233 118 0 / 90%);
 }
 
 .lang-toggle-slider {
